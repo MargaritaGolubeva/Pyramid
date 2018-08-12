@@ -21,6 +21,9 @@ private:
     Ui::MainWindow *ui;
 
     QPixmap *pix;
+    QVector <QVector <int> > imageSizes;
+
+    void ConstructImagePyramid();
 };
 
 #endif // MAINWINDOW_H
