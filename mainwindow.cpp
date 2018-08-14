@@ -34,15 +34,12 @@ void MainWindow::LoadImage()
 
     diagFiles.insert(((*pix).width()*(*pix).height())/2.,path);
 
-    ui->comboBox_file->clear();
-    foreach (QString name, diagFiles)
-    {
-        QFile f(name);
-        QStringList parts = name.split("/");
-        QString lastBit = parts.at(parts.size()-1);
+    QStringList parts = path.split("/");
+    QString lastBit = parts.at(parts.size()-1);
 
-        ui->comboBox_file->addItem(lastBit);
-    }
+    ui->comboBox_file->addItem(lastBit);
+
+    ui->label_size->setText("Size: " + QString::number((*pix).width()) + "x" + QString::number((*pix).height()));
 
     ConstructImagePyramid();
 }
@@ -54,31 +51,30 @@ void MainWindow::ConstructImagePyramid()
     int w = (*pix).width();
     int h = (*pix).height();
 
-    imageSizes.clear();
-    imageSizes.resize(2);
-
     ui->comboBox_layer->clear();
     while (w>=1 && h>=1)
     {
-        imageSizes[0].push_back(w);
-        imageSizes[1].push_back(h);
         w/=2;
         h/=2;
 
         ui->comboBox_layer->addItem(QString::number(i));
         i++;
     }
-    ui->label_size->setText("Size: " + QString::number(imageSizes[0][0]) + "x" + QString::number(imageSizes[1][0]));
 }
 
 void MainWindow::SelectLayer(int index)
 {
     QPixmap map=*pix;
-    map=map.scaled(imageSizes[0][index], imageSizes[1][index]);
-    ui->label_image->setPixmap(map.scaled(imageSizes[0][0], imageSizes[1][0]));
+
+    int new_w = static_cast<int>((*pix).width()/qPow(2, index));
+    int new_h = static_cast<int>((*pix).height()/qPow(2, index));
+
+    map=map.scaled(new_w, new_h);
+
+    ui->label_image->setPixmap(map.scaled((*pix).width(), (*pix).height()));
     ui->scrollArea_image->setWidget(ui->label_image);
 
-    ui->label_size->setText("Size: " + QString::number(imageSizes[0][index]) + "x" + QString::number(imageSizes[1][index]));
+    ui->label_size->setText("Size: " + QString::number(new_w) + "x" + QString::number(new_h));
 }
 
 void MainWindow::SelectFile(int index)
@@ -92,4 +88,6 @@ void MainWindow::SelectFile(int index)
    ui->scrollArea_image->setWidget(ui->label_image);
 
    ConstructImagePyramid();
+
+   ui->label_size->setText("Size: " + QString::number((*pix).width()) + "x" + QString::number((*pix).height()));
 }

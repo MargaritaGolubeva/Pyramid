@@ -3,7 +3,9 @@
 
 #include <QMainWindow>
 #include <QFileDialog>
-#include <Qmap>
+#include <QMap>
+#include <QtMath>
+#include <QDebug>
 
 
 using namespace std;
@@ -27,7 +29,6 @@ private:
     Ui::MainWindow *ui;
 
     QPixmap *pix;
-    QVector <QVector <int> > imageSizes;
     QMultiMap <double, QString> diagFiles;
 
     void ConstructImagePyramid();
