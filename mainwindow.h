@@ -3,7 +3,10 @@
 
 #include <QMainWindow>
 #include <QFileDialog>
-#include <QDebug>
+#include <Qmap>
+
+
+using namespace std;
 
 namespace Ui {
 class MainWindow;
@@ -19,11 +22,13 @@ public:
 private slots:
     void LoadImage();
     void SelectLayer(int index);
+    void SelectFile(int index);
 private:
     Ui::MainWindow *ui;
 
     QPixmap *pix;
     QVector <QVector <int> > imageSizes;
+    QMultiMap <double, QString> diagFiles;
 
     void ConstructImagePyramid();
 };

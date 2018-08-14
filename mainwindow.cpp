@@ -14,6 +14,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(open, SIGNAL(triggered()), this, SLOT(LoadImage()));
     connect(ui->comboBox_layer, SIGNAL(activated(int)), this, SLOT(SelectLayer(int)));
+    connect(ui->comboBox_file, SIGNAL(activated(int)), this, SLOT(SelectFile(int)));
 }
 
 MainWindow::~MainWindow()
@@ -26,9 +27,22 @@ void MainWindow::LoadImage()
     auto path = QFileDialog::getOpenFileName(this, "Open Dialog", "", "*.png *.jpg");
     if (path.isEmpty())
         return;
+
     pix = new QPixmap(path);
     ui->label_image->setPixmap(*pix);
     ui->scrollArea_image->setWidget(ui->label_image);
+
+    diagFiles.insert(((*pix).width()*(*pix).height())/2.,path);
+
+    ui->comboBox_file->clear();
+    foreach (QString name, diagFiles)
+    {
+        QFile f(name);
+        QStringList parts = name.split("/");
+        QString lastBit = parts.at(parts.size()-1);
+
+        ui->comboBox_file->addItem(lastBit);
+    }
 
     ConstructImagePyramid();
 }
@@ -54,6 +68,7 @@ void MainWindow::ConstructImagePyramid()
         ui->comboBox_layer->addItem(QString::number(i));
         i++;
     }
+    ui->label_size->setText("Size: " + QString::number(imageSizes[0][0]) + "x" + QString::number(imageSizes[1][0]));
 }
 
 void MainWindow::SelectLayer(int index)
@@ -64,4 +79,17 @@ void MainWindow::SelectLayer(int index)
     ui->scrollArea_image->setWidget(ui->label_image);
 
     ui->label_size->setText("Size: " + QString::number(imageSizes[0][index]) + "x" + QString::number(imageSizes[1][index]));
+}
+
+void MainWindow::SelectFile(int index)
+{
+   QMultiMap <double, QString>::const_iterator it = diagFiles.begin();
+
+   it+=index;
+
+   pix = new QPixmap(it.value());
+   ui->label_image->setPixmap(*pix);
+   ui->scrollArea_image->setWidget(ui->label_image);
+
+   ConstructImagePyramid();
 }
