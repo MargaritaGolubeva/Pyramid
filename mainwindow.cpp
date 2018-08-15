@@ -12,6 +12,10 @@ MainWindow::MainWindow(QWidget *parent) :
     QAction *open = new QAction("&Open", this);
     file->addAction(open);
 
+    QDoubleValidator* validator =  new QDoubleValidator(1.01, 10000.0, 2);
+    validator->setLocale(QLocale::English);
+    ui->lineEdit_ratio->setValidator(validator);
+
     connect(open, SIGNAL(triggered()), this, SLOT(LoadImage()));
     connect(ui->comboBox_layer, SIGNAL(activated(int)), this, SLOT(SelectLayer(int)));
     connect(ui->comboBox_file, SIGNAL(activated(int)), this, SLOT(SelectFile(int)));
@@ -34,14 +38,23 @@ void MainWindow::LoadImage()
 
     diagFiles.insert(((*pix).width()*(*pix).height())/2.,path);
 
-    QStringList parts = path.split("/");
-    QString lastBit = parts.at(parts.size()-1);
+    ui->comboBox_file->clear();
+    foreach (QString path, diagFiles)
+    {
+        QStringList parts = path.split("/");
+        QString lastBit = parts.at(parts.size()-1);
 
-    ui->comboBox_file->addItem(lastBit);
-
+        ui->comboBox_file->addItem(lastBit);
+    }
     ui->label_size->setText("Size: " + QString::number((*pix).width()) + "x" + QString::number((*pix).height()));
 
+    ratio = 2.;
+
+    ui->label_ratio->setText(QString::number(ratio));
+
     ConstructImagePyramid();
+
+    connect(ui->lineEdit_ratio, SIGNAL(returnPressed()), this, SLOT(ChangeRatio()));
 }
 
 void MainWindow::ConstructImagePyramid()
@@ -54,8 +67,8 @@ void MainWindow::ConstructImagePyramid()
     ui->comboBox_layer->clear();
     while (w>=1 && h>=1)
     {
-        w/=2;
-        h/=2;
+        w/=ratio;
+        h/=ratio;
 
         ui->comboBox_layer->addItem(QString::number(i));
         i++;
@@ -66,8 +79,8 @@ void MainWindow::SelectLayer(int index)
 {
     QPixmap map=*pix;
 
-    int new_w = static_cast<int>((*pix).width()/qPow(2, index));
-    int new_h = static_cast<int>((*pix).height()/qPow(2, index));
+    int new_w = static_cast<int>((*pix).width()/qPow(ratio, index));
+    int new_h = static_cast<int>((*pix).height()/qPow(ratio, index));
 
     map=map.scaled(new_w, new_h);
 
@@ -90,4 +103,12 @@ void MainWindow::SelectFile(int index)
    ConstructImagePyramid();
 
    ui->label_size->setText("Size: " + QString::number((*pix).width()) + "x" + QString::number((*pix).height()));
+}
+
+void MainWindow::ChangeRatio()
+{
+   ui->label_ratio->setText(ui->lineEdit_ratio->text());
+   ratio = ui->lineEdit_ratio->text().toDouble();
+
+   ConstructImagePyramid();
 }

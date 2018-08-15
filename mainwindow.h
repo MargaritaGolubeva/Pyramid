@@ -5,8 +5,7 @@
 #include <QFileDialog>
 #include <QMap>
 #include <QtMath>
-#include <QDebug>
-
+#include <QValidator>
 
 using namespace std;
 
@@ -25,9 +24,11 @@ private slots:
     void LoadImage();
     void SelectLayer(int index);
     void SelectFile(int index);
+    void ChangeRatio();
 private:
     Ui::MainWindow *ui;
 
+    double ratio;
     QPixmap *pix;
     QMultiMap <double, QString> diagFiles;
 
