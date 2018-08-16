@@ -12,7 +12,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QAction *open = new QAction("&Open", this);
     file->addAction(open);
 
-    QDoubleValidator* validator =  new QDoubleValidator(1.01, 10000.0, 2);
+    QDoubleValidator* validator =  new QDoubleValidator(1.1, 10000.0, 1);
     validator->setLocale(QLocale::English);
     ui->lineEdit_ratio->setValidator(validator);
 
@@ -33,28 +33,43 @@ void MainWindow::LoadImage()
         return;
 
     pix = new QPixmap(path);
-    ui->label_image->setPixmap(*pix);
-    ui->scrollArea_image->setWidget(ui->label_image);
 
-    diagFiles.insert(((*pix).width()*(*pix).height())/2.,path);
+    QFileInfo file(path);
+    QString format = file.completeSuffix();
 
-    ui->comboBox_file->clear();
-    foreach (QString path, diagFiles)
+    int init_w = (*pix).width();
+    int init_h = (*pix).height();
+
+    if (format=="png" || format=="jpg")
     {
-        QStringList parts = path.split("/");
-        QString lastBit = parts.at(parts.size()-1);
+        if (init_w>=1 && init_h>=1)
+        {
+            ui->label_image->setPixmap(*pix);
+            ui->scrollArea_image->setWidget(ui->label_image);
 
-        ui->comboBox_file->addItem(lastBit);
+            diagFiles.insert((init_w*init_h)/2.,path);
+
+            ui->comboBox_file->clear();
+            foreach (QString path, diagFiles)
+            {
+                QStringList parts = path.split("/");
+                QString lastBit = parts.at(parts.size()-1);
+
+                ui->comboBox_file->addItem(lastBit);
+            }
+            ui->label_size->setText("Size: " + QString::number(init_w) + "x" + QString::number(init_h));
+
+            ratio = 2.;
+
+            ui->label_ratio->setText(QString::number(ratio));
+
+            ConstructImagePyramid();
+
+            connect(ui->lineEdit_ratio, SIGNAL(returnPressed()), this, SLOT(ChangeRatio()));
+        }
+        else QMessageBox::warning(this, "Warning!", "Perhaps the file format is not supported, please, choose another file");
     }
-    ui->label_size->setText("Size: " + QString::number((*pix).width()) + "x" + QString::number((*pix).height()));
-
-    ratio = 2.;
-
-    ui->label_ratio->setText(QString::number(ratio));
-
-    ConstructImagePyramid();
-
-    connect(ui->lineEdit_ratio, SIGNAL(returnPressed()), this, SLOT(ChangeRatio()));
+    else QMessageBox::critical(this, "Attention!", "Invalid file format");
 }
 
 void MainWindow::ConstructImagePyramid()
@@ -107,8 +122,8 @@ void MainWindow::SelectFile(int index)
 
 void MainWindow::ChangeRatio()
 {
-   ui->label_ratio->setText(ui->lineEdit_ratio->text());
-   ratio = ui->lineEdit_ratio->text().toDouble();
+   ui->label_ratio->setText((ui->lineEdit_ratio->text()).replace(",","."));
+   ratio = ui->label_ratio->text().toDouble();
 
    ConstructImagePyramid();
 }

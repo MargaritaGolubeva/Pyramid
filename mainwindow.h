@@ -6,6 +6,7 @@
 #include <QMap>
 #include <QtMath>
 #include <QValidator>
+#include <QMessageBox>
 
 using namespace std;
 
